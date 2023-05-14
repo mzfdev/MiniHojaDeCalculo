@@ -1,73 +1,119 @@
 #include<iostream>
 using namespace std;
 
-struct Nodo{
-    int idFil;
-    Nodo *ant;
-    Nodo *sig;
+struct NodoColumna {
+    int idCol;
+    string dato;
+    NodoColumna *ant;
+    NodoColumna *sig;
 };
-Nodo* head;
 
-void insertar(int n, int pos){
-    Nodo *nuevo = new Nodo;
-    nuevo->idFil = n;
-    if (pos == 1 || head == NULL) {
-        nuevo->ant = NULL;
-        nuevo->sig = head;
+struct NodoFila {
+    int idFil;
+    NodoFila *ant;
+    NodoFila *sig;
+    NodoColumna *columnas;
+};
+
+NodoFila* head;
+
+void insertar(int idFila, int idColumna, string dato){
+    // buscar el nodo de la fila correspondiente
+    NodoFila *fila = head;
+    while (fila != NULL && fila->idFil != idFila) {
+        fila = fila->sig;
+    }
+
+    // si la fila no existe, crearla
+    if (fila == NULL) {
+        fila = new NodoFila;
+        fila->idFil = idFila;
+        fila->ant = NULL;
+        fila->sig = head;
+        fila->columnas = NULL;
         if (head != NULL) {
-            head->ant = nuevo;
+            head->ant = fila;
         }
-        head = nuevo;
+        head = fila;
+    }
+
+    // buscar el nodo de la columna correspondiente
+    NodoColumna *columna = fila->columnas;
+    while (columna != NULL && columna->idCol != idColumna) {
+        columna = columna->sig;
+    }
+
+    // si la columna no existe, crearla
+    if (columna == NULL) {
+        columna = new NodoColumna;
+        columna->idCol = idColumna;
+        columna->dato = dato;
+        columna->ant = NULL;
+        columna->sig = fila->columnas;
+        if (fila->columnas != NULL) {
+            fila->columnas->ant = columna;
+        }
+        fila->columnas = columna;
     } else {
-        Nodo* aux = head;
-        int cont = 1;
-        while (aux->sig != NULL && cont < pos - 1) {
-            aux = aux->sig;
-            cont++;
-        }
-        if (cont < pos - 1) {
-            while (cont < pos - 1) {
-                Nodo* nodoNull = new Nodo;
-                nodoNull->idFil = NULL;
-                nodoNull->ant = aux;
-                nodoNull->sig = NULL;
-                aux->sig = nodoNull;
-                aux = nodoNull;
-                cont++;
-            }
-        }
-        if (aux->sig == NULL) { // si el siguiente nodo es NULL
-            nuevo->ant = aux;
-            nuevo->sig = aux->sig;
-            if (aux->sig != NULL) {
-                aux->sig->ant = nuevo;
-            }
-            aux->sig = nuevo;
-        } else { // si el siguiente nodo no es NULL
-            aux->sig->idFil = n; // actualiza el valor del nodo existente
-        }
+        // si la columna ya existe, actualizar el dato
+        columna->dato = dato;
     }
 }
 
-
-void mostrar(){
-    Nodo *aux=head;
-    while(aux!=NULL){
-        cout<<aux->idFil<<"->";
-        aux=aux->sig;
+void mostrarMatriz() {
+    // buscar el número máximo de filas y columnas
+    int numFilas = 0, numCols = 0;
+    NodoFila *fila = head;
+    while (fila != NULL) {
+        if (fila->idFil > numFilas) {
+            numFilas = fila->idFil;
+        }
+        NodoColumna *columna = fila->columnas;
+        while (columna != NULL) {
+            if (columna->idCol > numCols) {
+                numCols = columna->idCol;
+            }
+            columna = columna->sig;
+        }
+        fila = fila->sig;
     }
-    cout<<endl;
+
+    // imprimir los datos en forma de matriz
+    for (int i = 1; i <= numFilas; i++) {
+        for (int j = 1; j <= numCols; j++) {
+            NodoFila *fila = head;
+            while (fila != NULL && fila->idFil != i) {
+                fila = fila->sig;
+            }
+            if (fila == NULL) {
+                cout << "0\t";
+            } else {
+                NodoColumna *columna = fila->columnas;
+                while (columna != NULL && columna->idCol != j) {
+                    columna = columna->sig;
+                }
+                if (columna == NULL) {
+                    cout << "0\t";
+                } else {
+                    cout << columna->dato << "\t";
+                }
+            }
+        }
+        cout << endl;
+    }
 }
+
 
 
 int main(){
 
-    insertar(1,1);
-    insertar(2,2);
-    insertar(3,5);
+    insertar(1,1,"Hola");
+    insertar(2,2,"Como");
+    insertar(3,3,"Estas");
+    insertar(5,4, "Tu");
    
 
-    mostrar();
+    mostrarMatriz();
 
     return 0;
 }
