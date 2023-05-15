@@ -1,119 +1,102 @@
 #include<iostream>
+#include "mautrix.h"
 using namespace std;
 
-struct NodoColumna {
-    int idCol;
-    string dato;
-    NodoColumna *ant;
-    NodoColumna *sig;
-};
-
-struct NodoFila {
-    int idFil;
-    NodoFila *ant;
-    NodoFila *sig;
-    NodoColumna *columnas;
-};
-
-NodoFila* head;
-
-void insertar(int idFila, int idColumna, string dato){
-    // buscar el nodo de la fila correspondiente
-    NodoFila *fila = head;
-    while (fila != NULL && fila->idFil != idFila) {
-        fila = fila->sig;
-    }
-
-    // si la fila no existe, crearla
-    if (fila == NULL) {
-        fila = new NodoFila;
-        fila->idFil = idFila;
-        fila->ant = NULL;
-        fila->sig = head;
-        fila->columnas = NULL;
-        if (head != NULL) {
-            head->ant = fila;
-        }
-        head = fila;
-    }
-
-    // buscar el nodo de la columna correspondiente
-    NodoColumna *columna = fila->columnas;
-    while (columna != NULL && columna->idCol != idColumna) {
-        columna = columna->sig;
-    }
-
-    // si la columna no existe, crearla
-    if (columna == NULL) {
-        columna = new NodoColumna;
-        columna->idCol = idColumna;
-        columna->dato = dato;
-        columna->ant = NULL;
-        columna->sig = fila->columnas;
-        if (fila->columnas != NULL) {
-            fila->columnas->ant = columna;
-        }
-        fila->columnas = columna;
-    } else {
-        // si la columna ya existe, actualizar el dato
-        columna->dato = dato;
-    }
+void menu(){
+    cout<<"Opciones: \n _________"<<endl;
+    cout<<"1.  Ingresar contenido"<<endl;
+    cout<<"2.  Saltar a la celda"<<endl;
+    cout<<"3.  Copiar"<<endl;
+    cout<<"4.  Cortar"<<endl;
+    cout<<"5.  Pegar"<<endl;
+    cout<<"6.  Mover a la izquierda"<<endl;
+    cout<<"7.  Mover a la derecha"<<endl;
+    cout<<"8.  Mover arriba"<<endl;
+    cout<<"9.  Mover abajo"<<endl;
+    cout<<"10. Guardar"<<endl;
+    cout<<"11. Salir"<<endl;
 }
-
-void mostrarMatriz() {
-    // buscar el número máximo de filas y columnas
-    int numFilas = 0, numCols = 0;
-    NodoFila *fila = head;
-    while (fila != NULL) {
-        if (fila->idFil > numFilas) {
-            numFilas = fila->idFil;
-        }
-        NodoColumna *columna = fila->columnas;
-        while (columna != NULL) {
-            if (columna->idCol > numCols) {
-                numCols = columna->idCol;
-            }
-            columna = columna->sig;
-        }
-        fila = fila->sig;
-    }
-
-    // imprimir los datos en forma de matriz
-    for (int i = 1; i <= numFilas; i++) {
-        for (int j = 1; j <= numCols; j++) {
-            NodoFila *fila = head;
-            while (fila != NULL && fila->idFil != i) {
-                fila = fila->sig;
-            }
-            if (fila == NULL) {
-                cout << "0\t";
-            } else {
-                NodoColumna *columna = fila->columnas;
-                while (columna != NULL && columna->idCol != j) {
-                    columna = columna->sig;
-                }
-                if (columna == NULL) {
-                    cout << "0\t";
-                } else {
-                    cout << columna->dato << "\t";
-                }
-            }
-        }
-        cout << endl;
-    }
-}
-
-
 
 int main(){
+    string contenido = "0";
+    int opc = 0;
+    int fila = 1;
+    int col = 1;
+    insertar(1,1, "0");
+    insertar(5,5, "0");
 
-    insertar(1,1,"Hola");
-    insertar(2,2,"Como");
-    insertar(3,3,"Estas");
-    insertar(5,4, "Tu");
-   
-
-    mostrarMatriz();
+    do{
+        menu();
+        mostrarMatriz();
+        cin>>opc;
+        switch (opc)
+        {
+        case 1:
+            cout<<"Ingrese el contenido de la celda"<<endl;
+            cin>>contenido;
+            insertar(fila, col, contenido);
+            break;
+        case 2:
+            cout<<"Ingrese el numero de fila de la celda a la que desea saltar: ";
+            cin>>fila;
+            cout<<"Ingrese el numero de columna de la celda a la que desea saltar: ";
+            cin>>col;
+            saltar(fila,col,"_");
+            break;
+        case 3:
+            cout<<"ACopiar"<<endl;
+            break;
+        case 4:
+            cout<<"Cortar"<<endl;
+            break;
+        case 5:
+            cout<<"Pegar"<<endl;
+            break;
+        case 6:
+            cout<<"Mover a la izquierda"<<endl;
+           if (buscarDato(fila,col) == "0" || buscarDato(fila,col) == "_"){
+                insertar(fila, col, "0");
+            }
+            col--;
+            saltar(fila,col,"_");
+            break;
+        case 7:
+            cout<<"Mover a la derecha"<<endl;
+            if (buscarDato(fila,col) == "0" || buscarDato(fila,col) == "_"){
+                insertar(fila, col, "0");
+            }
+            cout<<buscarDato(fila,col);
+            col++;
+            saltar(fila,col,"_");
+            break;
+        case 8:
+            cout<<"Mover arriba"<<endl;
+            if (buscarDato(fila,col) == "0" || buscarDato(fila,col) == "_"){
+                insertar(fila, col, "0");
+            }
+            fila--;
+            saltar(fila,col,"_");
+            break;
+        case 9:
+            cout<<"Mover abajo"<<endl;
+            if (buscarDato(fila,col) == "0" || buscarDato(fila,col) == "_"){
+                insertar(fila, col, "0");
+            }
+            fila++;
+            saltar(fila,col,"_");
+            break;
+        case 10:
+            cout<<"Guardar"<<endl;
+            break;
+        case 11:
+            cout<<"Salir"<<endl;
+            break;
+        default:
+            cout<<"Seleccione una opcion valida"<<endl;
+            break;
+        }
+        //system("cls");
+    }while(opc != 11);
 
     return 0;
 }
