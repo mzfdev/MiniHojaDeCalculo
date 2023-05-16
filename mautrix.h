@@ -91,7 +91,7 @@ void insertar(int idFila, int idColumna, string dato){
     }
 }
 
-void mostrarMatriz() {
+void mostrarMatriz(int f, int c) {
     // buscar el número máximo de filas y columnas
     int numFilas = 0, numCols = 0;
     NodoFila *fila = head;
@@ -117,22 +117,36 @@ void mostrarMatriz() {
                 fila = fila->sig;
             }
             if (fila == NULL) {
-                cout << "0\t";
+                if (i == f && j == c) {
+                    cout << "_\t";
+                } else {
+                    cout << "0\t";
+                }
             } else {
                 NodoColumna *columna = fila->columnas;
                 while (columna != NULL && columna->idCol != j) {
                     columna = columna->sig;
                 }
                 if (columna == NULL) {
-                    cout << "0\t";
+                    if (i == f && j == c) {
+                        cout << "_\t";
+                    } else {
+                        cout << "0\t";
+                    }
                 } else {
-                    cout << columna->dato << "\t";
+                    if (i == f && j == c) {
+                        cout << "_\t";
+                    } else {
+                        cout << columna->dato << "\t";
+                    }
                 }
             }
         }
         cout << endl;
     }
 }
+
+
 
 //Saltar a una celda
 void saltar(int idFila, int idColumna, string dato){

@@ -19,6 +19,7 @@ void menu(){
 
 int main(){
     string contenido = "0";
+    string copiedValue;
     int opc = 0;
     int fila = 1;
     int col = 1;
@@ -27,7 +28,7 @@ int main(){
 
     do{
         menu();
-        mostrarMatriz();
+        mostrarMatriz(fila, col);
         cin>>opc;
         switch (opc)
         {
@@ -41,49 +42,35 @@ int main(){
             cin>>fila;
             cout<<"Ingrese el numero de columna de la celda a la que desea saltar: ";
             cin>>col;
-            saltar(fila,col,"_");
             break;
         case 3:
-            cout<<"ACopiar"<<endl;
+            cout<<"El elemento se ha copiado"<<endl;
+            copiedValue = buscarDato(fila, col);
             break;
         case 4:
-            cout<<"Cortar"<<endl;
+            cout<<"El elemento se ha cortado"<<endl;
+            copiedValue = buscarDato(fila, col);
+            insertar(fila,col, "0");
             break;
         case 5:
             cout<<"Pegar"<<endl;
+            insertar(fila,col, copiedValue);
             break;
         case 6:
             cout<<"Mover a la izquierda"<<endl;
-           if (buscarDato(fila,col) == "0" || buscarDato(fila,col) == "_"){
-                insertar(fila, col, "0");
-            }
             col--;
-            saltar(fila,col,"_");
             break;
         case 7:
             cout<<"Mover a la derecha"<<endl;
-            if (buscarDato(fila,col) == "0" || buscarDato(fila,col) == "_"){
-                insertar(fila, col, "0");
-            }
-            cout<<buscarDato(fila,col);
             col++;
-            saltar(fila,col,"_");
             break;
         case 8:
             cout<<"Mover arriba"<<endl;
-            if (buscarDato(fila,col) == "0" || buscarDato(fila,col) == "_"){
-                insertar(fila, col, "0");
-            }
             fila--;
-            saltar(fila,col,"_");
             break;
         case 9:
             cout<<"Mover abajo"<<endl;
-            if (buscarDato(fila,col) == "0" || buscarDato(fila,col) == "_"){
-                insertar(fila, col, "0");
-            }
             fila++;
-            saltar(fila,col,"_");
             break;
         case 10:
             cout<<"Guardar"<<endl;
@@ -95,7 +82,7 @@ int main(){
             cout<<"Seleccione una opcion valida"<<endl;
             break;
         }
-        //system("cls");
+        system("cls");
     }while(opc != 11);
 
     return 0;
