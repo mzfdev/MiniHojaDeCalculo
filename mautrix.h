@@ -1,6 +1,7 @@
 #ifndef MATRIZ_H
 #define MATRIZ_H
 #include<iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -92,7 +93,6 @@ void insertar(int idFila, int idColumna, string dato){
 }
 
 void mostrarMatriz(int f, int c) {
-    // buscar el número máximo de filas y columnas
     int numFilas = 0, numCols = 0;
     NodoFila *fila = head;
     while (fila != NULL) {
@@ -109,7 +109,15 @@ void mostrarMatriz(int f, int c) {
         fila = fila->sig;
     }
 
-    // imprimir los datos en forma de matriz
+    if (f > numFilas) {
+        numFilas = f;
+    }
+    if (c > numCols) {
+        numCols = c;
+    }
+
+    const int anchoCelda = 10;
+
     for (int i = 1; i <= numFilas; i++) {
         for (int j = 1; j <= numCols; j++) {
             NodoFila *fila = head;
@@ -118,9 +126,9 @@ void mostrarMatriz(int f, int c) {
             }
             if (fila == NULL) {
                 if (i == f && j == c) {
-                    cout << "_\t";
+                    cout << setw(anchoCelda) << "_";
                 } else {
-                    cout << "0\t";
+                    cout << setw(anchoCelda) << " ";
                 }
             } else {
                 NodoColumna *columna = fila->columnas;
@@ -129,20 +137,38 @@ void mostrarMatriz(int f, int c) {
                 }
                 if (columna == NULL) {
                     if (i == f && j == c) {
-                        cout << "_\t";
+                        cout << setw(anchoCelda) << "_";
                     } else {
-                        cout << "0\t";
+                        cout << setw(anchoCelda) << " ";
                     }
                 } else {
                     if (i == f && j == c) {
-                        cout << "_\t";
+                        cout << setw(anchoCelda) << "_";
                     } else {
-                        cout << columna->dato << "\t";
+                        string dato = columna->dato;
+                        if (dato.length() > anchoCelda - 2) {
+                            dato = dato.substr(0, anchoCelda - 5) + "...";
+                        }
+                        cout << setw(anchoCelda) << dato;
                     }
                 }
             }
+
+            if (j < numCols) {
+                cout << "|";
+            }
         }
         cout << endl;
+
+        if (i < numFilas) {
+            for (int k = 1; k <= numCols; k++) {
+                cout << setw(anchoCelda) << setfill('-') << "" << setfill(' ');
+                if (k < numCols) {
+                    cout << "|";
+                }
+            }
+            cout << endl;
+        }
     }
 }
 

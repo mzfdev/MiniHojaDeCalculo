@@ -5,7 +5,7 @@ using namespace std;
 void menu(){
     cout<<"Opciones: \n _________"<<endl;
     cout<<"1.  Ingresar contenido"<<endl;
-    cout<<"2.  Saltar a la celda"<<endl;
+    cout<<"2.  Saltar a celda o extender hoja"<<endl;
     cout<<"3.  Copiar"<<endl;
     cout<<"4.  Cortar"<<endl;
     cout<<"5.  Pegar"<<endl;
@@ -18,13 +18,14 @@ void menu(){
 }
 
 int main(){
-    string contenido = "0";
+    string contenido = " ";
     string copiedValue;
     int opc = 0;
     int fila = 1;
     int col = 1;
-    insertar(1,1, "0");
-    insertar(5,5, "0");
+    insertar(1,1, " ");
+    insertar(5,5, " ");
+    system("Color 2");
 
     do{
         menu();
@@ -42,6 +43,7 @@ int main(){
             cin>>fila;
             cout<<"Ingrese el numero de columna de la celda a la que desea saltar: ";
             cin>>col;
+            cout<<"\nAhora puede ingresar contenido y continuar moviendose antes de agregarlo\n";
             break;
         case 3:
             cout<<"El elemento se ha copiado"<<endl;
@@ -50,7 +52,7 @@ int main(){
         case 4:
             cout<<"El elemento se ha cortado"<<endl;
             copiedValue = buscarDato(fila, col);
-            insertar(fila,col, "0");
+            insertar(fila,col, " ");
             break;
         case 5:
             cout<<"Pegar"<<endl;
@@ -58,18 +60,36 @@ int main(){
             break;
         case 6:
             cout<<"Mover a la izquierda"<<endl;
-            col--;
+            if(col>1){
+                col--;
+                system("Color 2");
+            }else{
+                system("Color 4");
+                cout<<"Esta tratando de superar los limites de la hoja\n";
+            }
             break;
         case 7:
             cout<<"Mover a la derecha"<<endl;
+            if(col>=1){
+                system("Color 2");
+            }
             col++;
             break;
         case 8:
             cout<<"Mover arriba"<<endl;
-            fila--;
+            if(fila>1){
+                fila--;
+                system("Color 2");
+            }else{
+                system("Color 4");
+                cout<<"Esta tratando de superar los limites de la hoja\n";
+            }
             break;
         case 9:
             cout<<"Mover abajo"<<endl;
+            if(col>=1){
+                system("Color 2");
+            }
             fila++;
             break;
         case 10:
@@ -82,7 +102,7 @@ int main(){
             cout<<"Seleccione una opcion valida"<<endl;
             break;
         }
-        system("cls");
+        //system("cls");
     }while(opc != 11);
 
     return 0;
