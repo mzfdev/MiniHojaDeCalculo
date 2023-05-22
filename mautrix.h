@@ -3,10 +3,10 @@
 #include<iostream>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 #include <dirent.h>
 #include "include/dnc/json.hpp"
 #include "json.hpp"
-#include "csv.h"
 
 namespace joaquinrmi {
     using json = nlohmann::json;
@@ -33,40 +33,97 @@ struct NodoFila {
 NodoFila* head;
 
 void guardar() {
-    json matrizJSON;
-
+    int numFilas = 0, numCols = 0;
     NodoFila* fila = head;
     while (fila != nullptr) {
-        json filaJSON;
-        filaJSON["idFil"] = fila->idFil;
-
+        if (fila->idFil > numFilas) {
+            numFilas = fila->idFil;
+        }
         NodoColumna* columna = fila->columnas;
         while (columna != nullptr) {
-            json columnaJSON;
-            columnaJSON["idCol"] = columna->idCol;
-            columnaJSON["dato"] = columna->dato;
-
-            filaJSON["columnas"].push_back(columnaJSON);
-
+            if (columna->idCol > numCols) {
+                numCols = columna->idCol;
+            }
             columna = columna->sig;
         }
-
-        matrizJSON["filas"].push_back(filaJSON);
-
         fila = fila->sig;
     }
+
+    const int anchoCelda = 10;
+    const int anchoSeparador = 2;
+    const int anchoLinea = (anchoCelda + anchoSeparador) * numCols + anchoSeparador;
 
     std::string nombreArchivo;
     std::cout << "Ingrese el nombre del archivo: ";
     std::cin >> nombreArchivo;
 
     std::ofstream archivoJSON(nombreArchivo + ".json");
-    archivoJSON << matrizJSON.dump(4); // Opcional: indentación de 4 espacios
+
+    std::stringstream contenidoJSON;
+
+    std::string lineaSeparador(anchoLinea, '-');
+
+    for (int i = 1; i <= numFilas; i++) {
+        contenidoJSON << lineaSeparador << "\n";
+        contenidoJSON << std::setw(anchoLinea);
+        for (int j = 1; j <= numCols; j++) {
+            NodoFila* filaActual = head;
+            while (filaActual != nullptr && filaActual->idFil != i) {
+                filaActual = filaActual->sig;
+            }
+
+            if (filaActual == nullptr) {
+                if (i == 1 && j == 1) {
+                    contenidoJSON << std::setw(anchoCelda) << " ";
+                } else if (i == numFilas && j == numCols) {
+                    contenidoJSON << std::setw(anchoCelda) << " ";
+                } else {
+                    contenidoJSON << std::setw(anchoCelda) << "|";
+                }
+            } else {
+                NodoColumna* columnaActual = filaActual->columnas;
+                while (columnaActual != nullptr && columnaActual->idCol != j) {
+                    columnaActual = columnaActual->sig;
+                }
+
+                if (columnaActual == nullptr) {
+                    if (i == 1 && j == 1) {
+                        contenidoJSON << std::setw(anchoCelda) << " ";
+                    } else if (i == numFilas && j == numCols) {
+                        contenidoJSON << std::setw(anchoCelda) << " ";
+                    } else {
+                        contenidoJSON << std::setw(anchoCelda) << "|";
+                    }
+                } else {
+                    std::string dato = columnaActual->dato;
+                    if (dato.length() > anchoCelda - 2) {
+                        dato = dato.substr(0, anchoCelda - 5) + "...";
+                    }
+                    contenidoJSON << std::setw(anchoCelda) << dato;
+                }
+            }
+
+            if (j < numCols) {
+                contenidoJSON << " ";
+            }
+        }
+        if (i < numFilas) {
+            contenidoJSON << "\n";
+        }
+    }
+
+    contenidoJSON << "\n";
+    contenidoJSON << lineaSeparador;
+    contenidoJSON << "\n";
+    archivoJSON << contenidoJSON.str();
     archivoJSON.close();
+
+    std::cout << "Hoja de cálculo guardada en el archivo " << nombreArchivo << ".json" << std::endl;
 }
 
+
 void mostrar() {
-    std::string directorio = "./"; // Directorio actual (puedes cambiarlo por el directorio deseado)
+    std::string directorio = "./"; 
     std::cout << "Archivos guardados en el directorio '" << directorio << "':" << std::endl;
 
     DIR* dir;
@@ -75,14 +132,12 @@ void mostrar() {
 
     if (dir) {
         int contador = 1;
-        std::string** archivos = new std::string*[100]; // Arreglo de punteros para almacenar los nombres de los archivos
 
         while ((archivo = readdir(dir)) != nullptr) {
             std::string nombreArchivo = archivo->d_name;
 
             if (nombreArchivo.length() >= 5 && nombreArchivo.substr(nombreArchivo.length() - 5) == ".json") {
                 std::cout << std::setw(2) << contador << " " << std::left << nombreArchivo << std::endl;
-                archivos[contador - 1] = new std::string(nombreArchivo);
                 contador++;
             }
         }
@@ -90,57 +145,48 @@ void mostrar() {
         closedir(dir);
 
         if (contador > 1) {
-            // Solicitar al usuario seleccionar un archivo
+            
             int seleccion;
             std::cout << "Seleccione el número del archivo que desea abrir: ";
             std::cin >> seleccion;
 
             if (seleccion >= 1 && seleccion < contador) {
-                std::string* nombreArchivo = archivos[seleccion - 1];
+                dir = opendir(directorio.c_str()); // Abrir el directorio nuevamente para buscar el archivo seleccionado
 
-                // Abrir archivo JSON
-                std::ifstream archivoJSON(*nombreArchivo);
-                if (archivoJSON.is_open()) {
-                    std::cout << "Creando hoja de cálculo con el contenido de " << *nombreArchivo << "..." << std::endl;
+                int contadorSeleccionado = 1;
 
-                    // Crear hoja de cálculo CSV con el contenido del archivo JSON
-                    std::string nombreCSV = nombreArchivo->substr(0, nombreArchivo->length() - 5) + ".csv";
-                    std::ofstream archivoCSV(nombreCSV);
+                while ((archivo = readdir(dir)) != nullptr) {
+                    std::string nombreArchivo = archivo->d_name;
 
-                    if (archivoCSV.is_open()) {
-                        json jsonData;
-                        archivoJSON >> jsonData;
-                        archivoJSON.close();
+                    if (nombreArchivo.length() >= 5 && nombreArchivo.substr(nombreArchivo.length() - 5) == ".json") {
+                        if (contadorSeleccionado == seleccion) {
+                            std::ifstream archivoJSON(nombreArchivo);
+                            if (archivoJSON.is_open()) {
+                                std::cout << "Mostrando el contenido del archivo " << nombreArchivo << ":" << std::endl;
 
-                        for (const auto& fila : jsonData["filas"]) {
-                            std::string filaCSV;
-                            for (const auto& columna : fila["columnas"]) {
-                                filaCSV += columna["dato"].get<std::string>() + ",";
+                                std::string linea;
+                                while (std::getline(archivoJSON, linea)) {
+                                    std::cout << linea << std::endl;
+                                }
+                                archivoJSON.close();
+                            } else {
+                                std::cout << "No se pudo abrir el archivo " << nombreArchivo << std::endl;
                             }
-                            filaCSV.pop_back(); // Eliminar la última coma
-                            archivoCSV << filaCSV << std::endl;
+
+                            break;
                         }
 
-                        archivoCSV.close();
-                        std::cout << "Se ha creado la hoja de cálculo " << nombreCSV << " con el contenido del archivo guardado." << std::endl;
-                    } else {
-                        std::cout << "No se pudo crear la hoja de cálculo." << std::endl;
+                        contadorSeleccionado++;
                     }
-                } else {
-                    std::cout << "No se pudo abrir el archivo " << *nombreArchivo << std::endl;
                 }
+
+                closedir(dir);
             } else {
                 std::cout << "Selección inválida." << std::endl;
             }
         } else {
             std::cout << "No hay archivos guardados en el directorio." << std::endl;
         }
-
-        // Liberar la memoria asignada
-        for (int i = 0; i < contador - 1; ++i) {
-            delete archivos[i];
-        }
-        delete[] archivos;
     } else {
         std::cout << "Error al abrir el directorio" << std::endl;
     }
