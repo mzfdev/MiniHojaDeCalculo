@@ -2,7 +2,25 @@
 #include "mautrix.h"
 using namespace std;
 
+void menuPrincipal(){
+    cout << "Menú Principal"<< endl;
+    cout << "================="<< endl;
+    cout << "1. Nuevo."<< endl;
+    cout << "2. Abrir."<< endl;
+    cout << "3. Salir."<< endl;
+    cout << "Ingrese una opción:"<< endl;
+}
+
 void menu(){
+    string contenido = " ";
+    string copiedValue;
+    int opc = 0;
+    int fila = 1;
+    int col = 1;
+    insertar(1,1, " ");
+    insertar(5,5, " ");
+    system("Color 2");
+
     cout<<"Opciones: \n _________"<<endl;
     cout<<"1.  Ingresar contenido"<<endl;
     cout<<"2.  Saltar a celda o extender hoja"<<endl;
@@ -15,20 +33,8 @@ void menu(){
     cout<<"9.  Mover abajo"<<endl;
     cout<<"10. Guardar"<<endl;
     cout<<"11. Salir"<<endl;
-}
-
-int main(){
-    string contenido = " ";
-    string copiedValue;
-    int opc = 0;
-    int fila = 1;
-    int col = 1;
-    insertar(1,1, " ");
-    insertar(5,5, " ");
-    system("Color 2");
 
     do{
-        menu();
         mostrarMatriz(fila, col);
         cin>>opc;
         switch (opc)
@@ -93,10 +99,11 @@ int main(){
             fila++;
             break;
         case 10:
-            cout<<"Guardar"<<endl;
+            guardar();
             break;
         case 11:
             cout<<"Salir"<<endl;
+            menuPrincipal();
             break;
         default:
             cout<<"Seleccione una opcion valida"<<endl;
@@ -104,6 +111,31 @@ int main(){
         }
         //system("cls");
     }while(opc != 11);
+
+}
+
+int main(){
+    menuPrincipal();
+    int opcion = 0;
+    do
+    {
+        cin >> opcion;
+        cin.ignore();
+        switch (opcion)
+        {
+        case 1:
+            menu();
+            break;
+        case 2:
+            mostrar();
+            break;
+        case 3:
+            cout << "Saliendo..." << endl;
+            break;
+        default:
+            break;
+        }
+    } while (opcion != 3);
 
     return 0;
 }
