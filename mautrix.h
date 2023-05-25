@@ -391,4 +391,24 @@ void saltar(int idFila, int idColumna, string dato){
     }
 }
 
+void limpiarLista() {
+    NodoFila* filaActual = head;
+    while (filaActual != nullptr) {
+        NodoColumna* columnaActual = filaActual->columnas;
+        while (columnaActual != nullptr) {
+            NodoColumna* columnaSiguiente = columnaActual->sig;
+            delete columnaActual;
+            columnaActual = columnaSiguiente;
+        }
+        
+        NodoFila* filaSiguiente = filaActual->sig;
+        delete filaActual;
+        filaActual = filaSiguiente;
+    }
+    
+    // Establecer el puntero head a nullptr para indicar que la lista está vacía.
+    head = nullptr;
+}
+
+
 #endif
