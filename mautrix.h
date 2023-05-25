@@ -2,8 +2,18 @@
 #define MATRIZ_H
 #include<iostream>
 #include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <dirent.h>
+#include "include/dnc/json.hpp"
+#include "json.hpp"
+
+namespace joaquinrmi {
+    using json = nlohmann::json;
+}
 
 using namespace std;
+using json = joaquinrmi::json;
 
 
 struct NodoColumna {
@@ -21,6 +31,166 @@ struct NodoFila {
 };
 
 NodoFila* head;
+
+void guardar() {
+    int numFilas = 0, numCols = 0;
+    NodoFila* fila = head;
+    while (fila != nullptr) {
+        if (fila->idFil > numFilas) {
+            numFilas = fila->idFil;
+        }
+        NodoColumna* columna = fila->columnas;
+        while (columna != nullptr) {
+            if (columna->idCol > numCols) {
+                numCols = columna->idCol;
+            }
+            columna = columna->sig;
+        }
+        fila = fila->sig;
+    }
+
+    const int anchoCelda = 10;
+    const int anchoSeparador = 2;
+    const int anchoLinea = (anchoCelda + anchoSeparador) * numCols + anchoSeparador;
+
+    std::string nombreArchivo;
+    std::cout << "Ingrese el nombre del archivo: ";
+    std::cin >> nombreArchivo;
+
+    std::ofstream archivoJSON(nombreArchivo + ".json");
+
+    std::stringstream contenidoJSON;
+
+    std::string lineaSeparador(anchoLinea, '-');
+
+    for (int i = 1; i <= numFilas; i++) {
+        contenidoJSON << lineaSeparador << "\n";
+        contenidoJSON << std::setw(anchoLinea);
+        for (int j = 1; j <= numCols; j++) {
+            NodoFila* filaActual = head;
+            while (filaActual != nullptr && filaActual->idFil != i) {
+                filaActual = filaActual->sig;
+            }
+
+            if (filaActual == nullptr) {
+                if (i == 1 && j == 1) {
+                    contenidoJSON << std::setw(anchoCelda) << " ";
+                } else if (i == numFilas && j == numCols) {
+                    contenidoJSON << std::setw(anchoCelda) << " ";
+                } else {
+                    contenidoJSON << std::setw(anchoCelda) << "|";
+                }
+            } else {
+                NodoColumna* columnaActual = filaActual->columnas;
+                while (columnaActual != nullptr && columnaActual->idCol != j) {
+                    columnaActual = columnaActual->sig;
+                }
+
+                if (columnaActual == nullptr) {
+                    if (i == 1 && j == 1) {
+                        contenidoJSON << std::setw(anchoCelda) << " ";
+                    } else if (i == numFilas && j == numCols) {
+                        contenidoJSON << std::setw(anchoCelda) << " ";
+                    } else {
+                        contenidoJSON << std::setw(anchoCelda) << "|";
+                    }
+                } else {
+                    std::string dato = columnaActual->dato;
+                    if (dato.length() > anchoCelda - 2) {
+                        dato = dato.substr(0, anchoCelda - 5) + "...";
+                    }
+                    contenidoJSON << std::setw(anchoCelda) << dato;
+                }
+            }
+
+            if (j < numCols) {
+                contenidoJSON << " ";
+            }
+        }
+        if (i < numFilas) {
+            contenidoJSON << "\n";
+        }
+    }
+
+    contenidoJSON << "\n";
+    contenidoJSON << lineaSeparador;
+    contenidoJSON << "\n";
+    archivoJSON << contenidoJSON.str();
+    archivoJSON.close();
+
+    std::cout << "Hoja de cálculo guardada en el archivo " << nombreArchivo << ".json" << std::endl;
+}
+
+
+void mostrar() {
+    std::string directorio = "./"; 
+    std::cout << "Archivos guardados en el directorio '" << directorio << "':" << std::endl;
+
+    DIR* dir;
+    struct dirent* archivo;
+    dir = opendir(directorio.c_str());
+
+    if (dir) {
+        int contador = 1;
+
+        while ((archivo = readdir(dir)) != nullptr) {
+            std::string nombreArchivo = archivo->d_name;
+
+            if (nombreArchivo.length() >= 5 && nombreArchivo.substr(nombreArchivo.length() - 5) == ".json") {
+                std::cout << std::setw(2) << contador << " " << std::left << nombreArchivo << std::endl;
+                contador++;
+            }
+        }
+
+        closedir(dir);
+
+        if (contador > 1) {
+            
+            int seleccion;
+            std::cout << "Seleccione el número del archivo que desea abrir: ";
+            std::cin >> seleccion;
+
+            if (seleccion >= 1 && seleccion < contador) {
+                dir = opendir(directorio.c_str()); // Abrir el directorio nuevamente para buscar el archivo seleccionado
+
+                int contadorSeleccionado = 1;
+
+                while ((archivo = readdir(dir)) != nullptr) {
+                    std::string nombreArchivo = archivo->d_name;
+
+                    if (nombreArchivo.length() >= 5 && nombreArchivo.substr(nombreArchivo.length() - 5) == ".json") {
+                        if (contadorSeleccionado == seleccion) {
+                            std::ifstream archivoJSON(nombreArchivo);
+                            if (archivoJSON.is_open()) {
+                                std::cout << "Mostrando el contenido del archivo " << nombreArchivo << ":" << std::endl;
+
+                                std::string linea;
+                                while (std::getline(archivoJSON, linea)) {
+                                    std::cout << linea << std::endl;
+                                }
+                                archivoJSON.close();
+                            } else {
+                                std::cout << "No se pudo abrir el archivo " << nombreArchivo << std::endl;
+                            }
+
+                            break;
+                        }
+
+                        contadorSeleccionado++;
+                    }
+                }
+
+                closedir(dir);
+            } else {
+                std::cout << "Selección inválida." << std::endl;
+            }
+        } else {
+            std::cout << "No hay archivos guardados en el directorio." << std::endl;
+        }
+    } else {
+        std::cout << "Error al abrir el directorio" << std::endl;
+    }
+}
 
 string buscarDato(int idFila, int idColumna) {
     // buscar el nodo de la fila correspondiente
@@ -220,5 +390,25 @@ void saltar(int idFila, int idColumna, string dato){
         columna->dato = dato;
     }
 }
+
+void limpiarLista() {
+    NodoFila* filaActual = head;
+    while (filaActual != nullptr) {
+        NodoColumna* columnaActual = filaActual->columnas;
+        while (columnaActual != nullptr) {
+            NodoColumna* columnaSiguiente = columnaActual->sig;
+            delete columnaActual;
+            columnaActual = columnaSiguiente;
+        }
+        
+        NodoFila* filaSiguiente = filaActual->sig;
+        delete filaActual;
+        filaActual = filaSiguiente;
+    }
+    
+    // Establecer el puntero head a nullptr para indicar que la lista está vacía.
+    head = nullptr;
+}
+
 
 #endif
