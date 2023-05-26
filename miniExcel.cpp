@@ -182,9 +182,6 @@ int main()
             case 2:
                 mostrar();
                 break;
-            case 3:
-                cout << "Saliendo..." << endl;
-                break;
             default:
                 break;
             }
