@@ -183,6 +183,7 @@ int main()
                 mostrar();
                 break;
             default:
+                cout<<"Ingrese solamente opciones validas"<<endl;
                 break;
             }
         }
